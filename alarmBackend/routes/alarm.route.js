@@ -7,11 +7,11 @@ module.exports = (io) => {
     const { id } = req.params;
     try {
       const alarms = await alarmSchema.find({ userInfo: id });
-    //   alarms.forEach(alarm => {
-    //     schedule.scheduleJob(alarm.time, () => {
-    //         console.log('Alarm triggered at', new Date());
-    //     });
-    // });
+      alarms.forEach(alarm => {
+        schedule.scheduleJob(alarm.time, () => {
+            console.log('Alarm triggered at', new Date());
+        });
+    });
       res.status(200).send(alarms);
     } catch (err) {
       console.log("Some error finding alarms by username");
@@ -22,8 +22,8 @@ module.exports = (io) => {
     const { time, userInfo } = req.body;
 
     const alarmFunction = () => {
-      console.log("Wake up!!!!!");
-      io.emit(userInfo, { message: "Alarm Ringing!" });
+      console.log("Wake up!!!!!");    
+      io.emit(userInfo, "Alarm Ringing!" ); 
     };
 
     if (time < Date.now()) { 

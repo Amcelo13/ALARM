@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useAppSelector } from '../app/hooks'
 import axios from 'axios'
+import useSound from 'use-sound';
 import { io } from 'socket.io-client';
 const socket = io("http://localhost:4000");
-
+import alarmSound from '../assets/alarmsample.mp3' 
 const Home = () => {
+  
+  const [play, { stop }] = useSound(alarmSound);
   const userName = useAppSelector((state) => state?.userData?.username)
   const userID = useAppSelector((state) => state?.userData?.id as string)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -15,9 +18,11 @@ const Home = () => {
   useEffect(() => {
     socket.on(userID, (message: string) => {
       setNotification(message)
+      play()
       setTimeout(() => {
         setNotification("")
-      }, 5000);
+        stop()
+      }, 6000);
     });
     return () => {
       socket.off("message");
@@ -30,6 +35,7 @@ const Home = () => {
   }
   useEffect(() => {
     getALarms()
+    
   }, [])
 
   const handelSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,7 +45,12 @@ const Home = () => {
     await axios.post(`http://localhost:4000/setAlarm`, { time: time1, userInfo: userID })
     getALarms()
   }
-
+  const timeListToShow = (time: string): string => {
+    const date = new Date(time);
+    let options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+    let formattedDate = date.toLocaleString('en-US', options);
+    return formattedDate;
+}
 
   return (
     <div>
@@ -57,7 +68,8 @@ const Home = () => {
         <label htmlFor="time">Alarm Time:</label>
         <input type="datetime-local" id="time" name="time"
           ref={inputRef} 
-          placeholder="e.g., 2023-11-05T13:30:00" required />
+          placeholder="e.g., 2023-11-05T13:30:00" required 
+          style={{marginRight:"2rem", padding:".6rem"}}/>
         <button type="submit">Set Alarm</button>
       </form>
 
@@ -66,7 +78,7 @@ const Home = () => {
         {userAlarms.map((alarm: any, key) => {
           return (
             <div key={alarm.userInfo}>
-              <p>{alarm.time}</p>
+              <p>{timeListToShow(alarm.time)}</p>
             </div>
           )
         })}
