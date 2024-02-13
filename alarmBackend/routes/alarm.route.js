@@ -20,7 +20,7 @@ module.exports = (io) => {
 
   router.post("/setAlarm", async (req, res) => {
     const { time, userInfo } = req.body;
-
+    const io = req.io     //<------------------------io can be used
     const alarmFunction = () => {
       console.log("Wake up!!!!!");    
       io.emit(userInfo, "Alarm Ringing!" ); 
